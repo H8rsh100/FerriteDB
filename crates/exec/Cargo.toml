@@ -1,0 +1,12 @@
+[package]
+name = "exec"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+storage = { path = "../storage" }
+catalog   = { path = "../catalog" }
+sql       = { path = "../sql" }
+index     = { path = "../index" }

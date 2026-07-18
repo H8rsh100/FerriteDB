@@ -1,0 +1,11 @@
+[package]
+name = "txn"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+storage = { path = "../storage" }
+exec    = { path = "../exec" }
+catalog = { path = "../catalog" }

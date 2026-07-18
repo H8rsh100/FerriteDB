@@ -1,0 +1,18 @@
+[package]
+name = "server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "ferritedb"
+path = "src/main.rs"
+
+[dependencies]
+sql       = { path = "../sql" }
+catalog   = { path = "../catalog" }
+exec      = { path = "../exec" }
+optimizer = { path = "../optimizer" }
+txn       = { path = "../txn" }
+storage   = { path = "../storage" }

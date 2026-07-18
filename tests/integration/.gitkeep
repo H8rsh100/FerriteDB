@@ -1,0 +1,7 @@
+-- Phase 8: Integration test suite lives here.
+-- Each .sql file will be run through the full pipeline and output compared
+-- against an expected result file.
+--
+-- Example structure (Phase 8):
+--   tests/integration/01_create_insert_select.sql
+--   tests/integration/01_create_insert_select.expected

@@ -1,0 +1,12 @@
+[package]
+name = "optimizer"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+catalog   = { path = "../catalog" }
+sql       = { path = "../sql" }
+exec      = { path = "../exec" }
+storage   = { path = "../storage" }
