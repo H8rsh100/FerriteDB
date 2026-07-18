@@ -5,7 +5,7 @@
 //! are declared so that the workspace compiles end-to-end.
 
 use std::path::Path;
-use crate::page::{Page, PageId, PAGE_SIZE};
+use crate::page::{Page, PageId};
 
 /// Error type returned by DiskManager operations.
 #[derive(Debug)]

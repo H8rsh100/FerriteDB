@@ -24,7 +24,11 @@ impl std::error::Error for ParseError {}
 
 /// Parses a token stream into a sequence of `Statement`s.
 pub struct Parser {
+    /// Token stream produced by the Lexer. Phase 4 will consume this.
+    #[allow(dead_code)]
     tokens: Vec<(Token, crate::lexer::Span)>,
+    /// Current read position into `tokens`. Phase 4 will advance this.
+    #[allow(dead_code)]
     pos: usize,
 }
 
