@@ -1,12 +1,23 @@
-//! Storage crate — page format, disk manager, buffer pool.
+//! Storage crate — page format, disk manager, and buffer pool.
 //!
-//! Phase 1 will fill this out. For now the public API surface is declared
-//! so that other crates can depend on this crate and compile cleanly.
+//! ## Architecture
+//! ```text
+//!   BufferPoolManager          (in-memory LRU cache of pages)
+//!         │
+//!         ▼
+//!    DiskManager               (raw page reads/writes to a heap file)
+//!         │
+//!         ▼
+//!      Page (4 KiB)            (fixed-size byte buffer with typed header)
+//! ```
+//!
+//! Upper layers (index, catalog, exec) interact only with `BufferPoolManager`
+//! — they never call `DiskManager` directly.
 
 pub mod page;
 pub mod disk_manager;
 pub mod buffer_pool;
 
-pub use page::{Page, PAGE_SIZE, PageId};
-pub use disk_manager::DiskManager;
-pub use buffer_pool::BufferPoolManager;
+pub use page::{Page, PAGE_SIZE, PageId, PageType};
+pub use disk_manager::{DiskManager, DiskError};
+pub use buffer_pool::{BufferPoolManager, BufError};
