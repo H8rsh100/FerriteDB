@@ -1,13 +1,9 @@
 //! AST — typed representation of SQL statements and expressions.
-//!
-//! Each SQL statement maps to one `Statement` variant.
-//! Expressions recurse through `Expr`.
-//! Phase 4 will wire these to the parser.
 
 use crate::lexer::Span;
 
 /// A fully-parsed SQL statement.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     /// `CREATE TABLE name (col type [NOT NULL], ...)`
     CreateTable {
@@ -19,7 +15,7 @@ pub enum Statement {
         table: String,
         values: Vec<Expr>,
     },
-    /// `SELECT ... FROM table [JOIN ...] [WHERE ...] [ORDER BY ...] [LIMIT ...]`
+    /// `SELECT ... FROM table [JOIN ...] [WHERE ...] [ORDER BY ...] [LIMIT ...] [OFFSET ...]`
     Select {
         columns: SelectList,
         from: String,
@@ -46,7 +42,7 @@ pub enum Statement {
 }
 
 /// Column definition inside CREATE TABLE.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ColumnDef {
     pub name: String,
     pub data_type: SqlType,
@@ -63,8 +59,20 @@ pub enum SqlType {
     Float,
 }
 
+impl SqlType {
+    pub fn to_catalog_type(&self) -> catalog::DataType {
+        match self {
+            SqlType::Int => catalog::DataType::Int,
+            SqlType::BigInt => catalog::DataType::BigInt,
+            SqlType::Varchar(n) => catalog::DataType::Varchar(*n),
+            SqlType::Boolean => catalog::DataType::Boolean,
+            SqlType::Float => catalog::DataType::Float,
+        }
+    }
+}
+
 /// The list of projected expressions in a SELECT.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SelectList {
     /// `SELECT *`
     Star,
@@ -73,7 +81,7 @@ pub enum SelectList {
 }
 
 /// JOIN clause in a SELECT.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct JoinClause {
     pub table: String,
     pub condition: Expr,
@@ -87,7 +95,7 @@ pub enum Order {
 }
 
 /// A SQL expression — literals, column references, binary ops, etc.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     /// Integer literal.
     IntLit(i64),
@@ -116,4 +124,15 @@ pub enum BinOp {
     Eq, Neq, Lt, Gt, Lte, Gte,
     And, Or,
     Add, Sub, Mul, Div,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sql_type_conversion() {
+        assert_eq!(SqlType::Int.to_catalog_type(), catalog::DataType::Int);
+        assert_eq!(SqlType::Varchar(50).to_catalog_type(), catalog::DataType::Varchar(50));
+    }
 }
