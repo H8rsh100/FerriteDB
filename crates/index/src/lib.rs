@@ -1,9 +1,23 @@
-//! Index crate — disk-backed B+Tree indexing.
+//! Index crate — disk-backed B+Tree built on `storage::BufferPoolManager`.
 //!
-//! Phase 2 will implement the full B+Tree on top of `storage::BufferPoolManager`.
-//! For Phase 0 the public API surface is declared so the workspace compiles.
+//! ## Architecture
+//! ```text
+//!   BTree<K>              (Phase 2: insert/search/delete/range_scan)
+//!      │
+//!      ▼
+//!   Node<K>               (in-memory repr, serialised into Pages)
+//!      │
+//!      ▼
+//!   BufferPoolManager     (fetch/pin/unpin/flush pages)
+//!      │
+//!      ▼
+//!   DiskManager / disk
+//! ```
 
-pub mod btree;
+pub mod key;
 pub mod node;
+pub mod btree;
 
+pub use key::BTreeKey;
+pub use node::{Node, NodeKind, INVALID_PAGE_ID};
 pub use btree::BTree;

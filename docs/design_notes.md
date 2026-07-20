@@ -72,4 +72,15 @@ later.
 
 ---
 
-*Phase 2 notes will be added after B+Tree implementation.*
+## Phase 2 — B+Tree Indexing
+
+### Node Layout & Serialization
+- **Disk-backed pages**: Nodes are serialized directly into 4KiB storage pages managed by `BufferPoolManager`.
+- **NodeHeader (20B)**: `kind: u8`, `num_keys: u16`, `right_sibling: u64`, `parent: u64`, `flags: u8`.
+- **Sibling Pointers**: Leaf nodes maintain a `right_sibling` page ID enabling efficient $O(1)$ horizontal range scanning across leaf pages without re-traversing internal parent nodes.
+- **Key Generics (`BTreeKey`)**: Supports generic keys (`i64`, `String`) via explicit binary encoding/decoding traits.
+
+### Tree Operations & Balancing
+- **Top-Down Node Splitting**: Splits full nodes proactively during insertion down to the leaves, eliminating complex recursive multi-pass parent updates.
+- **Ordered Range Scans**: `range_scan(start, end)` traverses to the first leaf node $\ge \text{start}$, then traverses leaf sibling pointers until keys exceed $\text{end}$.
+
