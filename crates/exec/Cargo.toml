@@ -10,3 +10,6 @@ storage = { path = "../storage" }
 catalog   = { path = "../catalog" }
 sql       = { path = "../sql" }
 index     = { path = "../index" }
+
+[dev-dependencies]
+tempfile = "3"
