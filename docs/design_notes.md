@@ -80,7 +80,15 @@ later.
 - **Sibling Pointers**: Leaf nodes maintain a `right_sibling` page ID enabling efficient $O(1)$ horizontal range scanning across leaf pages without re-traversing internal parent nodes.
 - **Key Generics (`BTreeKey`)**: Supports generic keys (`i64`, `String`) via explicit binary encoding/decoding traits.
 
-### Tree Operations & Balancing
-- **Top-Down Node Splitting**: Splits full nodes proactively during insertion down to the leaves, eliminating complex recursive multi-pass parent updates.
-- **Ordered Range Scans**: `range_scan(start, end)` traverses to the first leaf node $\ge \text{start}$, then traverses leaf sibling pointers until keys exceed $\text{end}$.
+---
+
+## Phase 3 — System Catalog
+
+### Schema & Table Serialization
+- **Binary Encoding**: `DataType`, `Column`, `Schema`, and `Table` implement explicit binary encoding/decoding without external dependencies (serde/bincode-free).
+- **Disk Persistence**: Catalog page (`PageType::Catalog`) is allocated via `BufferPoolManager`.
+- **`save` & `load` workflows**:
+  - `Catalog::save(bpm)` encodes all table metadata into the reserved `catalog_page_id`, marks the frame dirty, and flushes to disk.
+  - `Catalog::load(catalog_page_id, bpm)` reads the catalog page on startup and reconstructs table definitions in memory.
+
 
