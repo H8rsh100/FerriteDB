@@ -1,23 +1,48 @@
-//! ProjectExecutor — projects a subset of columns from child tuples.
-//! Phase 5 implementation.
+//! Project operator — evaluates expressions to form output tuples.
 
-use crate::{ExecError, Executor, Tuple};
 use catalog::Schema;
+use sql::ast::Expr;
+use crate::{eval_expr, ExecError, Executor, Tuple};
 
-pub struct ProjectExecutor {
+pub struct Project {
+    child: Box<dyn Executor + Send + Sync>,
+    exprs: Vec<Expr>,
     output_schema: Schema,
-    _column_indices: Vec<usize>,
 }
 
-impl ProjectExecutor {
-    pub fn new(output_schema: Schema, column_indices: Vec<usize>) -> Self {
-        Self { output_schema, _column_indices: column_indices }
+impl Project {
+    pub fn new(
+        child: Box<dyn Executor + Send + Sync>,
+        exprs: Vec<Expr>,
+        output_schema: Schema,
+    ) -> Self {
+        Self {
+            child,
+            exprs,
+            output_schema,
+        }
     }
 }
 
-impl Executor for ProjectExecutor {
-    fn schema(&self) -> &Schema { &self.output_schema }
+impl Executor for Project {
+    fn schema(&self) -> &Schema {
+        &self.output_schema
+    }
+
     fn next(&mut self) -> Result<Option<Tuple>, ExecError> {
-        Ok(None) // Phase 5 implementation.
+        if let Some(child_tuple) = self.child.next()? {
+            let mut projected_vals = Vec::with_capacity(self.exprs.len());
+            for expr in &self.exprs {
+                let val = eval_expr(expr, &child_tuple, self.child.schema())?;
+                projected_vals.push(val);
+            }
+            Ok(Some(Tuple::new(projected_vals)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn reset(&mut self) -> Result<(), ExecError> {
+        self.child.reset()
     }
 }

@@ -1,12 +1,9 @@
-//! SQL crate — lexer, recursive-descent parser, and AST.
-//!
-//! Phase 4 will implement the full pipeline. For Phase 0 the module tree
-//! is declared so the workspace compiles cleanly.
+//! SQL crate — lexer, AST, and parser.
 
-pub mod lexer;
 pub mod ast;
+pub mod lexer;
 pub mod parser;
 
-pub use lexer::{Lexer, Token};
-pub use ast::Statement;
+pub use lexer::{Lexer, Span, Token};
+pub use ast::{Statement, Expr, BinOp, SqlType, SelectList, JoinClause, Order, ColumnDef};
 pub use parser::{Parser, ParseError};

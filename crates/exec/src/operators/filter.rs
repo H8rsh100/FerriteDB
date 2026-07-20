@@ -1,24 +1,36 @@
-//! FilterExecutor — evaluates a WHERE predicate against each child tuple.
-//! Phase 5 implementation.
+//! Filter operator — filters input tuples using a predicate expression.
 
-use crate::{ExecError, Executor, Tuple};
 use catalog::Schema;
 use sql::ast::Expr;
+use crate::{eval_expr, ExecError, Executor, Tuple};
 
-pub struct FilterExecutor {
-    schema: Schema,
-    _predicate: Expr,
+pub struct Filter {
+    child: Box<dyn Executor + Send + Sync>,
+    predicate: Expr,
 }
 
-impl FilterExecutor {
-    pub fn new(schema: Schema, predicate: Expr) -> Self {
-        Self { schema, _predicate: predicate }
+impl Filter {
+    pub fn new(child: Box<dyn Executor + Send + Sync>, predicate: Expr) -> Self {
+        Self { child, predicate }
     }
 }
 
-impl Executor for FilterExecutor {
-    fn schema(&self) -> &Schema { &self.schema }
+impl Executor for Filter {
+    fn schema(&self) -> &Schema {
+        self.child.schema()
+    }
+
     fn next(&mut self) -> Result<Option<Tuple>, ExecError> {
-        Ok(None) // Phase 5 implementation.
+        while let Some(tuple) = self.child.next()? {
+            let val = eval_expr(&self.predicate, &tuple, self.child.schema())?;
+            if val.is_truthy() {
+                return Ok(Some(tuple));
+            }
+        }
+        Ok(None)
+    }
+
+    fn reset(&mut self) -> Result<(), ExecError> {
+        self.child.reset()
     }
 }

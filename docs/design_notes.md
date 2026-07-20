@@ -82,16 +82,19 @@ later.
 
 ---
 
-## Phase 4 — SQL Parser & AST
+## Phase 5 — Volcano Execution Engine
 
-### Lexer
-- **Zero-allocation scanning**: `Lexer` scans raw characters into typed `Token` variants with precise line and column `Span` tracking.
-- **SQL Keywords & Data Types**: Case-insensitive matching for DDL/DML keywords (`SELECT`, `INSERT`, `CREATE TABLE`, `UPDATE`, `DELETE`, `JOIN`, `WHERE`, `ORDER BY`, `LIMIT`, `OFFSET`) and SQL column types (`INT`, `BIGINT`, `VARCHAR(n)`, `BOOLEAN`, `FLOAT`).
+### Execution Model
+- **Volcano Iterator Pattern**: Every query operator implements the `Executor` trait (`schema()`, `next()`, `reset()`). Operators stream `Tuple`s pull-style, loading one row at a time with minimal memory footprint.
+- **Dynamic Expression Evaluation**: `eval_expr()` dynamically evaluates arithmetic, comparison, and boolean expressions against runtime `Tuple` data using schema context.
 
-### Recursive-Descent Parser
-- **Precedence Climbing**: Expressions are parsed bottom-up according to standard operator precedence (`OR` < `AND` < Comparisons < Additive < Multiplicative < Primary/Column references).
-- **AST Statements**: Structured into type-safe AST nodes (`CreateTable`, `Insert`, `Select`, `Update`, `Delete`, `BeginTransaction`, `Commit`, `Abort`).
-- **Catalog Type Mapping**: `SqlType` cleanly maps to `catalog::DataType` for schema registration.
+### Implemented Operators
+- **`SeqScan`**: Streams tuples sequentially from disk/heap storage.
+- **`IndexScan`**: Scans B+Tree range indices for fast point & range lookup.
+- **`Filter`**: Evaluates boolean predicate expressions on incoming tuples.
+- **`Project`**: Evaluates target expressions to generate reshaped output tuples.
+- **`NestedLoopJoin`**: Joins left and right child iterators with optional join conditions and child iterator resetting.
+
 
 
 
