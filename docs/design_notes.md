@@ -82,13 +82,16 @@ later.
 
 ---
 
-## Phase 3 — System Catalog
+## Phase 4 — SQL Parser & AST
 
-### Schema & Table Serialization
-- **Binary Encoding**: `DataType`, `Column`, `Schema`, and `Table` implement explicit binary encoding/decoding without external dependencies (serde/bincode-free).
-- **Disk Persistence**: Catalog page (`PageType::Catalog`) is allocated via `BufferPoolManager`.
-- **`save` & `load` workflows**:
-  - `Catalog::save(bpm)` encodes all table metadata into the reserved `catalog_page_id`, marks the frame dirty, and flushes to disk.
-  - `Catalog::load(catalog_page_id, bpm)` reads the catalog page on startup and reconstructs table definitions in memory.
+### Lexer
+- **Zero-allocation scanning**: `Lexer` scans raw characters into typed `Token` variants with precise line and column `Span` tracking.
+- **SQL Keywords & Data Types**: Case-insensitive matching for DDL/DML keywords (`SELECT`, `INSERT`, `CREATE TABLE`, `UPDATE`, `DELETE`, `JOIN`, `WHERE`, `ORDER BY`, `LIMIT`, `OFFSET`) and SQL column types (`INT`, `BIGINT`, `VARCHAR(n)`, `BOOLEAN`, `FLOAT`).
+
+### Recursive-Descent Parser
+- **Precedence Climbing**: Expressions are parsed bottom-up according to standard operator precedence (`OR` < `AND` < Comparisons < Additive < Multiplicative < Primary/Column references).
+- **AST Statements**: Structured into type-safe AST nodes (`CreateTable`, `Insert`, `Select`, `Update`, `Delete`, `BeginTransaction`, `Commit`, `Abort`).
+- **Catalog Type Mapping**: `SqlType` cleanly maps to `catalog::DataType` for schema registration.
+
 
 
