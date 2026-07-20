@@ -82,18 +82,16 @@ later.
 
 ---
 
-## Phase 5 — Volcano Execution Engine
+## Phase 6 — Query Optimizer & Planner
 
-### Execution Model
-- **Volcano Iterator Pattern**: Every query operator implements the `Executor` trait (`schema()`, `next()`, `reset()`). Operators stream `Tuple`s pull-style, loading one row at a time with minimal memory footprint.
-- **Dynamic Expression Evaluation**: `eval_expr()` dynamically evaluates arithmetic, comparison, and boolean expressions against runtime `Tuple` data using schema context.
+### Logical Planning & Lowering
+- **AST to LogicalPlan**: `Planner::build_logical_plan` converts SQL AST statements into intermediate `LogicalPlan` nodes (`Scan`, `IndexScan`, `Filter`, `Project`, `Join`).
+- **Physical Lowering**: `Planner::build_physical_plan` converts optimized logical plans into physical Volcano executor trees ready for streaming execution.
 
-### Implemented Operators
-- **`SeqScan`**: Streams tuples sequentially from disk/heap storage.
-- **`IndexScan`**: Scans B+Tree range indices for fast point & range lookup.
-- **`Filter`**: Evaluates boolean predicate expressions on incoming tuples.
-- **`Project`**: Evaluates target expressions to generate reshaped output tuples.
-- **`NestedLoopJoin`**: Joins left and right child iterators with optional join conditions and child iterator resetting.
+### Rule-Based Rewrites
+- **Predicate Pushdown (`push_down_predicates`)**: Automatically pushes filter predicates down past projections and joins, reducing intermediate tuple dataset sizes.
+- **Index Selection (`select_indexes`)**: Detects indexed columns referenced in filter predicates and substitutes sequential table scans with range-based `IndexScan` nodes.
+
 
 
 
